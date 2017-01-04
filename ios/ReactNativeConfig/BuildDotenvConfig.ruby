@@ -35,14 +35,14 @@ rescue Errno::ENOENT
 end
 
 package_json = begin
-  array = Array.new
+  ret = Hash.new
   raw = File.read(package_json_path)
   raw = JSON.parse(raw).each { |k, v|
     if (v.kind_of? String)
-      array.merge!(k => v)
+      ret.merge!(k => v)
     end
   }
-  array
+  ret
 rescue Errno::ENOENT
   puts("***************************************")
   puts("*** Can't find package.json file ! ****")
