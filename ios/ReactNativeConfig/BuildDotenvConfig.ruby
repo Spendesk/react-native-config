@@ -38,7 +38,7 @@ package_json = begin
   ret = Hash.new
   raw = File.read(package_json_path)
   raw = JSON.parse(raw).each { |k, v|
-    if (v.kind_of? String || v.kind_of? Integer)
+    if (v.kind_of? String) || (v.kind_of? Integer)
       ret.merge!(k => v)
     end
   }
