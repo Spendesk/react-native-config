@@ -32,7 +32,7 @@ rescue Errno::ENOENT
   {} # set dotenv as an empty hash
 end
 
-package_json_path = File.join(Dir.pwd, "./package.json")
+package_json_path = File.join(Dir.pwd, "../../../package.json")
 package_json = begin
   array = Array.new
   raw = File.read(package_json_path)
