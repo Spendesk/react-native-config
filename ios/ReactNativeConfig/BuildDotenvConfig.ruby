@@ -32,30 +32,29 @@ rescue Errno::ENOENT
   {} # set dotenv as an empty hash
 end
 
-packageJSONPath = File.join(Dir.pwd, "./package.json")
-packageJSON = begin
-  raw = File.read(packageJSONPath)
-  raw = JSON.parse(raw)
-  raw
+package_json_path = File.join(Dir.pwd, "./package.json")
+package_json = begin
+  array = Array.new
+  raw = File.read(package_json_path)
+  raw = JSON.parse(raw).each { |k, v|
+    if (v.kind_of? String)
+      array.merge!(k => v)
+    end
+  }
+  array
 rescue Errno::ENOENT
   puts("***************************************")
   puts("*** Can't find package.json file ! ****")
   puts("***************************************")
-  puts("Looking at #{packageJSONPath}")
+  puts("Looking at #{package_json_path}")
   {} # set dotenv as an empty hash
 end
 
 # add package json strings to macro
-packageJSONDefineStrings = Array.new
-packageJSON.each { |k, v|
-  if (v.kind_of? String)
-    packageJSONDefineStrings.push(%Q(@"#{k}":@"#{v}"))
-  end
-}
+# package_json_objc = package_json.map { |k, v| %Q(@"#{k}":@"#{v}") }.join(",")
 
 # create obj file that sets DOT_ENV as a NSDictionary
-dotenv_objc = dotenv.concat packageJSONDefineStrings
-dotenv_objc = dotenv_objc.map { |k, v| %Q(@"#{k}":@"#{v}") }.join(",")
+dotenv_objc = dotenv.map { |k, v| %Q(@"#{k}":@"#{v}") }.join(",")
 template = <<EOF
   #define DOT_ENV @{ #{dotenv_objc} };
 EOF
@@ -65,11 +64,15 @@ path = File.join(ENV["SYMROOT"], "GeneratedDotEnv.m")
 File.open(path, "w") { |f| f.puts template }
 
 # create header file with defines for the Info.plist preprocessor
-info_plist_defines_objc = dotenv.map { |k, v| %Q(#define __RN_CONFIG_#{k}  #{v}) }.join("\n")
+package_json_info_plist_defines_objc = package_json.map { |k, v| %Q(#define __NPM_PACKAGE_#{k}  #{v}) }.join("\n")
+rn_config_info_plist_defines_objc = dotenv.map { |k, v| %Q(#define __RN_CONFIG_#{k}  #{v}) }.join("\n")
 
 # write it so the Info.plist preprocessor can access it
 path = File.join(ENV["CONFIGURATION_BUILD_DIR"], "GeneratedInfoPlistDotEnv.h")
-File.open(path, "w") { |f| f.puts info_plist_defines_objc }
+File.open(path, "w") { |f|
+  f.puts package_json_info_plist_defines_objc
+  f.puts rn_config_info_plist_defines_objc
+}
 
 if custom_env
   File.delete("/tmp/envfile")
