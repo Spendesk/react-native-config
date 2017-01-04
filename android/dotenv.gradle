@@ -42,6 +42,23 @@ def readDotEnv = {
     project.ext.set("env", env)
 }
 
+def readPackageJson = {
+    def packageJson = "package.json"
+
+    println("Reading package.json from: $packageJson")
+    try {
+        def packageJsonFile = new File(packageJson)
+        def npmPackage = new JsonSlurper().parseText(packageJsonFile.text)
+        project.ext.set("npmPackage", npmPackage);
+        
+    } catch (FileNotFoundException ex) {
+        println("**********************************")
+        println("*** Missing package.json file ****")
+        println("**********************************")
+    }
+}
+
+readPackageJson()
 readDotEnv()
 
 android {
