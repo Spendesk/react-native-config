@@ -48,7 +48,7 @@ def readPackageJson = {
 
     println("Reading package.json from: $packageJson")
     try {
-        def packageJsonFile = new File(packageJson)
+        def packageJsonFile = new File("$project.rootDir/../$packageJson")
         def npmPackage = new JsonSlurper().parseText(packageJsonFile.text)
         project.ext.set("npmPackage", npmPackage);
         
