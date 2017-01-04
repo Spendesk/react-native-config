@@ -32,8 +32,30 @@ rescue Errno::ENOENT
   {} # set dotenv as an empty hash
 end
 
+packageJSONPath = File.join(Dir.pwd, "./package.json")
+packageJSON = begin
+  raw = File.read(packageJSONPath)
+  raw = JSON.parse(raw)
+  raw
+rescue Errno::ENOENT
+  puts("***************************************")
+  puts("*** Can't find package.json file ! ****")
+  puts("***************************************")
+  puts("Looking at #{packageJSONPath}")
+  {} # set dotenv as an empty hash
+end
+
+# add package json strings to macro
+packageJSONDefineStrings = Array.new
+packageJSON.each { |k, v|
+  if (v.kind_of? String)
+    packageJSONDefineStrings.push(%Q(@"#{k}":@"#{v}"))
+  end
+}
+
 # create obj file that sets DOT_ENV as a NSDictionary
-dotenv_objc = dotenv.map { |k, v| %Q(@"#{k}":@"#{v}") }.join(",")
+dotenv_objc = dotenv.concat packageJSONDefineStrings
+dotenv_objc = dotenv_objc.map { |k, v| %Q(@"#{k}":@"#{v}") }.join(",")
 template = <<EOF
   #define DOT_ENV @{ #{dotenv_objc} };
 EOF
