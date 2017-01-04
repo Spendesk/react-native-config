@@ -10,8 +10,10 @@ else
   custom_env = false
   file = ".env"
 end
+package_json_path = File.join(Dir.pwd, "../../../package.json")
 
 puts "Reading env from #{file}"
+puts "Reading package.json from #{package_json_path}"
 
 dotenv = begin
   # find that above node_modules/react-native-config/ios/
@@ -32,7 +34,6 @@ rescue Errno::ENOENT
   {} # set dotenv as an empty hash
 end
 
-package_json_path = File.join(Dir.pwd, "../../../package.json")
 package_json = begin
   array = Array.new
   raw = File.read(package_json_path)
